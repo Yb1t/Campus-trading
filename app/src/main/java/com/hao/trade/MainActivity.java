@@ -3,6 +3,7 @@ package com.hao.trade;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,10 +36,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         LeanCloud.setLogLevel(LCLogger.Level.ERROR);
 
-//      TODO  LeanCloud.initialize(this, "", "", "");
+        //TODO LeanCloud.initialize(this, "", "", "");
 
 //        启动推送服务，同时设置默认打开的 Activity
         PushService.setDefaultPushCallback(this,MainActivity.class);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            String channelId = String.valueOf(NotificationManager.IMPORTANCE_HIGH);
+            PushService.setDefaultChannelId(this, channelId);
+        }
         // 订阅频道，当该频道消息到来的时候，打开对应的 Activity
         // 参数依次为：当前的 context、频道名称、回调对象的类(点击通知栏的通知进入的 Activity
         PushService.subscribe(this, "public", MainActivity.class);
@@ -72,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private void saveInstallationId(String id){
         if(LCUser.getCurrentUser() != null){
             LCObject user = LCObject.createWithoutData("_User", LCUser.getCurrentUser().getObjectId());
-            user.put("installationId", id);;
+            user.put("installationId", id);
             user.saveInBackground().subscribe(new Observer<LCObject>() {
                 @Override
                 public void onSubscribe(Disposable d) {
